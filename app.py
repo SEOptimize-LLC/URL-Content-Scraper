@@ -133,150 +133,150 @@ if uploaded_file is not None:
                 st.error("Please enter a Serper API key in the sidebar to continue")
             else:
                 # Create progress bar
-            progress_bar = st.progress(0)
-            status_text = st.empty()
-            
-            # Results container
-            results = []
-            errors = []
-            
-            # Scrape each URL
-            for i, url in enumerate(urls):
-                # Update progress
-                progress = (i + 1) / len(urls)
-                progress_bar.progress(progress)
-                status_text.text(f"Scraping URL {i + 1} of {len(urls)}: {url[:50]}...")
+                progress_bar = st.progress(0)
+                status_text = st.empty()
                 
-                # Scrape URL
-                result, error = scrape_url(url, api_key, include_markdown)
+                # Results container
+                results = []
+                errors = []
                 
-                if error:
-                    errors.append({
-                        'url': url,
-                        'error': error
-                    })
-                else:
-                    results.append({
-                        'url': url,
-                        'title': result.get('title', 'N/A'),
-                        'description': result.get('description', 'N/A'),
-                        'content_length': len(result.get('text', '')) if result.get('text') else 0,
-                        'markdown_length': len(result.get('markdown', '')) if result.get('markdown') else 0,
-                        'full_result': result
-                    })
-                
-                # Rate limiting
-                if i < len(urls) - 1:
-                    time.sleep(rate_limit)
-            
-            # Clear progress
-            progress_bar.empty()
-            status_text.empty()
-            
-            # Display results
-            st.success(f"✅ Scraping completed! Successfully scraped {len(results)} out of {len(urls)} URLs.")
-            
-            # Show results in tabs
-            tab1, tab2, tab3 = st.tabs(["📊 Summary", "📝 Detailed Results", "❌ Errors"])
-            
-            with tab1:
-                if results:
-                    # Create summary dataframe
-                    summary_df = pd.DataFrame([
-                        {
-                            'URL': r['url'],
-                            'Title': r['title'][:50] + '...' if len(r['title']) > 50 else r['title'],
-                            'Description': r['description'][:50] + '...' if len(r['description']) > 50 else r['description'],
-                            'Content Length': r['content_length'],
-                            'Markdown Length': r['markdown_length']
-                        }
-                        for r in results
-                    ])
+                # Scrape each URL
+                for i, url in enumerate(urls):
+                    # Update progress
+                    progress = (i + 1) / len(urls)
+                    progress_bar.progress(progress)
+                    status_text.text(f"Scraping URL {i + 1} of {len(urls)}: {url[:50]}...")
                     
-                    st.dataframe(summary_df, use_container_width=True)
+                    # Scrape URL
+                    result, error = scrape_url(url, api_key, include_markdown)
                     
-                    # Download button for summary
-                    csv = summary_df.to_csv(index=False)
-                    st.download_button(
-                        label="📥 Download Summary as CSV",
-                        data=csv,
-                        file_name=f"scraping_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                        mime="text/csv"
-                    )
-            
-            with tab2:
-                if results:
-                    for i, result in enumerate(results):
-                        with st.expander(f"🔗 {result['url'][:100]}..."):
-                            st.subheader("Basic Info")
-                            st.write(f"**Title:** {result['title']}")
-                            st.write(f"**Description:** {result['description']}")
-                            
-                            # Show content preview
-                            if result['full_result'].get('text'):
-                                st.subheader("Text Content Preview")
-                                st.text_area(
-                                    "First 1000 characters",
-                                    value=result['full_result']['text'][:1000] + "...",
-                                    height=200,
-                                    disabled=True
+                    if error:
+                        errors.append({
+                            'url': url,
+                            'error': error
+                        })
+                    else:
+                        results.append({
+                            'url': url,
+                            'title': result.get('title', 'N/A'),
+                            'description': result.get('description', 'N/A'),
+                            'content_length': len(result.get('text', '')) if result.get('text') else 0,
+                            'markdown_length': len(result.get('markdown', '')) if result.get('markdown') else 0,
+                            'full_result': result
+                        })
+                    
+                    # Rate limiting
+                    if i < len(urls) - 1:
+                        time.sleep(rate_limit)
+                
+                # Clear progress
+                progress_bar.empty()
+                status_text.empty()
+                
+                # Display results
+                st.success(f"✅ Scraping completed! Successfully scraped {len(results)} out of {len(urls)} URLs.")
+                
+                # Show results in tabs
+                tab1, tab2, tab3 = st.tabs(["📊 Summary", "📝 Detailed Results", "❌ Errors"])
+                
+                with tab1:
+                    if results:
+                        # Create summary dataframe
+                        summary_df = pd.DataFrame([
+                            {
+                                'URL': r['url'],
+                                'Title': r['title'][:50] + '...' if len(r['title']) > 50 else r['title'],
+                                'Description': r['description'][:50] + '...' if len(r['description']) > 50 else r['description'],
+                                'Content Length': r['content_length'],
+                                'Markdown Length': r['markdown_length']
+                            }
+                            for r in results
+                        ])
+                        
+                        st.dataframe(summary_df, use_container_width=True)
+                        
+                        # Download button for summary
+                        csv = summary_df.to_csv(index=False)
+                        st.download_button(
+                            label="📥 Download Summary as CSV",
+                            data=csv,
+                            file_name=f"scraping_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                            mime="text/csv"
+                        )
+                
+                with tab2:
+                    if results:
+                        for i, result in enumerate(results):
+                            with st.expander(f"🔗 {result['url'][:100]}..."):
+                                st.subheader("Basic Info")
+                                st.write(f"**Title:** {result['title']}")
+                                st.write(f"**Description:** {result['description']}")
+                                
+                                # Show content preview
+                                if result['full_result'].get('text'):
+                                    st.subheader("Text Content Preview")
+                                    st.text_area(
+                                        "First 1000 characters",
+                                        value=result['full_result']['text'][:1000] + "...",
+                                        height=200,
+                                        disabled=True
+                                    )
+                                
+                                if include_markdown and result['full_result'].get('markdown'):
+                                    st.subheader("Markdown Content Preview")
+                                    st.text_area(
+                                        "First 1000 characters",
+                                        value=result['full_result']['markdown'][:1000] + "...",
+                                        height=200,
+                                        disabled=True
+                                    )
+                                
+                                # Download individual result
+                                result_json = json.dumps(result['full_result'], indent=2)
+                                st.download_button(
+                                    label="📥 Download Full Result as JSON",
+                                    data=result_json,
+                                    file_name=f"result_{i+1}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                                    mime="application/json",
+                                    key=f"download_{i}"
                                 )
-                            
-                            if include_markdown and result['full_result'].get('markdown'):
-                                st.subheader("Markdown Content Preview")
-                                st.text_area(
-                                    "First 1000 characters",
-                                    value=result['full_result']['markdown'][:1000] + "...",
-                                    height=200,
-                                    disabled=True
-                                )
-                            
-                            # Download individual result
-                            result_json = json.dumps(result['full_result'], indent=2)
-                            st.download_button(
-                                label="📥 Download Full Result as JSON",
-                                data=result_json,
-                                file_name=f"result_{i+1}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                                mime="application/json",
-                                key=f"download_{i}"
-                            )
-            
-            with tab3:
-                if errors:
-                    error_df = pd.DataFrame(errors)
-                    st.dataframe(error_df, use_container_width=True)
-                    
-                    # Download errors
-                    error_csv = error_df.to_csv(index=False)
-                    st.download_button(
-                        label="📥 Download Errors as CSV",
-                        data=error_csv,
-                        file_name=f"scraping_errors_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                        mime="text/csv"
-                    )
-                else:
-                    st.info("No errors occurred during scraping! 🎉")
-            
-            # Download all results as JSON
-            if results:
-                all_results = {
-                    'summary': {
-                        'total_urls': len(urls),
-                        'successful': len(results),
-                        'failed': len(errors),
-                        'timestamp': datetime.now().isoformat()
-                    },
-                    'results': [r['full_result'] for r in results],
-                    'errors': errors
-                }
                 
-                all_results_json = json.dumps(all_results, indent=2)
-                st.download_button(
-                    label="📥 Download All Results as JSON",
-                    data=all_results_json,
-                    file_name=f"all_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                    mime="application/json"
-                )
+                with tab3:
+                    if errors:
+                        error_df = pd.DataFrame(errors)
+                        st.dataframe(error_df, use_container_width=True)
+                        
+                        # Download errors
+                        error_csv = error_df.to_csv(index=False)
+                        st.download_button(
+                            label="📥 Download Errors as CSV",
+                            data=error_csv,
+                            file_name=f"scraping_errors_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                            mime="text/csv"
+                        )
+                    else:
+                        st.info("No errors occurred during scraping! 🎉")
+                
+                # Download all results as JSON
+                if results:
+                    all_results = {
+                        'summary': {
+                            'total_urls': len(urls),
+                            'successful': len(results),
+                            'failed': len(errors),
+                            'timestamp': datetime.now().isoformat()
+                        },
+                        'results': [r['full_result'] for r in results],
+                        'errors': errors
+                    }
+                    
+                    all_results_json = json.dumps(all_results, indent=2)
+                    st.download_button(
+                        label="📥 Download All Results as JSON",
+                        data=all_results_json,
+                        file_name=f"all_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                        mime="application/json"
+                    )
 
 else:
     # Instructions when no file is uploaded
